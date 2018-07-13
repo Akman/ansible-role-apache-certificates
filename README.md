@@ -12,7 +12,7 @@ Available variables are listed below, along with default values (see `defaults/m
 
     apache_certificates_dir: "{{ playbook_dir }}"
     
-    Directory that contains certificate files named as in vhost definition
+    Directory that contains certificate files named as are in vhost definition
     for geerlingguy.apache role
 
 ## Dependencies
