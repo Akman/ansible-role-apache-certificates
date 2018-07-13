@@ -1,0 +1,32 @@
+---
+# tasks/main.yml
+
+- name: Ensure certificate chain file presents
+  copy:
+    src: "{{ playbook_dir }}/inventories/deploy/all/files/{{ inventory_hostname }}/certs/{{ item.certificate_chain_file | basename }}"
+    dest: "{{ item.certificate_chain_file }}"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  with_items: "{{ apache_vhosts_ssl }}"
+  when: apache_create_vhosts
+
+- name: Ensure certificate file presents
+  copy:
+    src: "{{ playbook_dir }}/inventories/deploy/all/files/{{ inventory_hostname }}/certs/{{ item.certificate_file | basename }}"
+    dest: "{{ item.certificate_file }}"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  with_items: "{{ apache_vhosts_ssl }}"
+  when: apache_create_vhosts
+
+- name: Ensure certificate key file presents
+  copy:
+    src: "{{ playbook_dir }}/inventories/deploy/all/files/{{ inventory_hostname }}/certs/{{ item.certificate_key_file | basename }}"
+    dest: "{{ item.certificate_key_file }}"
+    owner: "root"
+    group: "root"
+    mode: "0600"
+  with_items: "{{ apache_vhosts_ssl }}"
+  when: apache_create_vhosts
