@@ -8,7 +8,12 @@ Upload virtual host certificate files defined for geerlingguy.apache role on Lin
 
 ## Role Variables
 
-None.
+Available variables are listed below, along with default values (see `defaults/main.yml`):
+
+    apache_certificates_dir: "{{ playbook_dir }}"
+    
+    Directory that contains certificate files named as in vhost definition
+    for geerlingguy.apache role
 
 ## Dependencies
 
@@ -17,6 +22,10 @@ None.
     - hosts: all
       roles:
         - Akman.apache_certificates
+
+*Inside vars/main.yml*:
+
+    apache_certificates_dir: "{{ playbook_dir }}/inventories/certificates"
 
 ## License
 
