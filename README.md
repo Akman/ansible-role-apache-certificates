@@ -1,4 +1,4 @@
-# Ansible Role: apache_certificates
+# Ansible Role: certificates
 
 Upload virtual host certificate files defined for geerlingguy.apache role on Linux
 
@@ -21,7 +21,7 @@ Available variables are listed below, along with default values (see `defaults/m
 
     - hosts: all
       roles:
-        - Akman.apache_certificates
+        - Akman.certificates
 
 *Inside vars/main.yml*:
 
