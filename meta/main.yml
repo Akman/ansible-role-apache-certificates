@@ -4,7 +4,7 @@
 dependencies: []
 
 galaxy_info:
-  role_name: certificates
+  role_name: apache-certificates
   author: Akman
   description: Upload virtual host certificate files defined for geerlingguy.apache role on Linux
   license: "license (MIT)"
