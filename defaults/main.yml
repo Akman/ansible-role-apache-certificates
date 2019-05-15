@@ -1,4 +1,4 @@
 ---
 # defaults/main.yml
 
-apache_certificates_dir: "{{ playbook_dir }}"
+#apache_certificates_dir: "{{ playbook_dir }}"
