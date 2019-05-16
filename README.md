@@ -1,6 +1,6 @@
 # Ansible Role: apache_certificates
 
-Upload virtual host certificate files defined for geerlingguy.apache role on Linux
+Create self signed virtual host certificate files defined for geerlingguy.apache role on Linux
 
 ## Requirements
 
@@ -10,10 +10,10 @@ Upload virtual host certificate files defined for geerlingguy.apache role on Lin
 
 Available variables are listed below, along with default values (see `defaults/main.yml`):
 
-    apache_certificates_dir: "{{ playbook_dir }}"
-    
-    Directory that contains certificate files named as are in vhost definition
-    for geerlingguy.apache role
+    root_certificates_dir: "{{ playbook_dir }}/inventories/deploy/all/files/certs"
+
+    Directory that contains self signed root CA certificate and key files
+    named rootCA.crt and rootCA.key
 
 ## Dependencies
 
@@ -25,7 +25,7 @@ Available variables are listed below, along with default values (see `defaults/m
 
 *Inside vars/main.yml*:
 
-    apache_certificates_dir: "{{ playbook_dir }}/inventories/certificates"
+    root_certificates_dir: "{{ playbook_dir }}/inventories/deploy/all/files/certs"
 
 ## License
 

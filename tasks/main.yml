@@ -1,32 +1,51 @@
 ---
 # tasks/main.yml
 
-- name: Ensure certificate chain file presents
-  copy:
-    src: "{{ apache_certificates_dir }}/{{ item.certificate_chain_file | basename }}"
-    dest: "{{ item.certificate_chain_file }}"
-    owner: "root"
-    group: "root"
-    mode: "0644"
-  with_items: "{{ apache_vhosts_ssl }}"
-  when: apache_create_vhosts and not((apache_certificates_dir is undefined) or (apache_certificates_dir is none) or (apache_certificates_dir | trim == ''))
+- name: Create temporary certs directory
+  tempfile:
+    state: directory
+    suffix: certs
+  register: certs_temp
 
-- name: Ensure certificate file presents
+- name: Ensure root CA key present
   copy:
-    src: "{{ apache_certificates_dir }}/{{ item.certificate_file | basename }}"
-    dest: "{{ item.certificate_file }}"
-    owner: "root"
-    group: "root"
-    mode: "0644"
-  with_items: "{{ apache_vhosts_ssl }}"
-  when: apache_create_vhosts and not((apache_certificates_dir is undefined) or (apache_certificates_dir is none) or (apache_certificates_dir | trim == ''))
+    src: "{{ root_certificates_dir }}/rootCA.key"
+    dest: "{{ certs_temp.path }}/rootCA.key"
 
-- name: Ensure certificate key file presents
+- name: Ensure root CA certificate present
   copy:
-    src: "{{ apache_certificates_dir }}/{{ item.certificate_key_file | basename }}"
-    dest: "{{ item.certificate_key_file }}"
-    owner: "root"
-    group: "root"
-    mode: "0600"
+    src: "{{ root_certificates_dir }}/rootCA.crt"
+    dest: "{{ certs_temp.path }}/rootCA.crt"
+
+- name: Generate a private key with the default values (4096 bits, RSA)
+  openssl_privatekey:
+    path: "{{ item.certificate_key_file }}"
   with_items: "{{ apache_vhosts_ssl }}"
-  when: apache_create_vhosts and not((apache_certificates_dir is undefined) or (apache_certificates_dir is none) or (apache_certificates_dir | trim == ''))
+  when: apache_create_vhosts
+
+- name: Generate a certificate signing request with subject information
+  openssl_csr:
+    path: "{{ certs_temp.path }}/{{ item.servername }}.csr"
+    privatekey_path: "{{ item.certificate_key_file }}"
+    organization_name: "Private Person"
+    organizational_unit_name: "Development"
+    email_address: "{{ item.serveradmin }}"
+    common_name: "{{ item.servername }}"
+    subject_alt_name: "DNS:{{ item.servername }},DNS:{{ item.serveralias }}"
+  with_items: "{{ apache_vhosts_ssl }}"
+  when: apache_create_vhosts
+
+- name: Generate an OpenSSL certificate signed with root CA certificate
+  openssl_certificate:
+    path: "{{ item.certificate_file }}"
+    csr_path: "{{ certs_temp.path }}/{{ item.servername }}.csr"
+    ownca_path: "{{ certs_temp.path }}/rootCA.crt"
+    ownca_privatekey_path: "{{ certs_temp.path }}/rootCA.key"
+    provider: ownca
+  with_items: "{{ apache_vhosts_ssl }}"
+  when: apache_create_vhosts
+
+- name: Delete temporary certs directory
+  file:
+    state: absent
+    path: "{{ certs_temp.path }}"
