@@ -6,22 +6,40 @@
     state: directory
     suffix: certs
   register: certs_temp
+  changed_when: false
+  when: root_certificates_dir is defined
 
 - name: Ensure root CA key present
   copy:
     src: "{{ root_certificates_dir }}/rootCA.key"
     dest: "{{ certs_temp.path }}/rootCA.key"
+  when: root_certificates_dir is defined
 
 - name: Ensure root CA certificate present
   copy:
     src: "{{ root_certificates_dir }}/rootCA.crt"
     dest: "{{ certs_temp.path }}/rootCA.crt"
+  when: root_certificates_dir is defined
+
+- name: Ensure private key folder exists
+  file:
+    state: directory
+    path: "{{ item.certificate_key_file | dirname }}"
+  with_items: "{{ apache_vhosts_ssl }}"
+  when: root_certificates_dir is defined and apache_create_vhosts | bool
+
+- name: Ensure certificate folder exists
+  file:
+    state: directory
+    path: "{{ item.certificate_file | dirname }}"
+  with_items: "{{ apache_vhosts_ssl }}"
+  when: root_certificates_dir is defined and apache_create_vhosts | bool
 
 - name: Generate a private key with the default values (4096 bits, RSA)
   openssl_privatekey:
     path: "{{ item.certificate_key_file }}"
   with_items: "{{ apache_vhosts_ssl }}"
-  when: apache_create_vhosts
+  when: root_certificates_dir is defined and apache_create_vhosts | bool
 
 - name: Generate a certificate signing request with subject information
   openssl_csr:
@@ -33,7 +51,7 @@
     common_name: "{{ item.servername }}"
     subject_alt_name: "DNS:{{ item.servername }},DNS:{{ item.serveralias }}"
   with_items: "{{ apache_vhosts_ssl }}"
-  when: apache_create_vhosts
+  when: root_certificates_dir is defined and apache_create_vhosts | bool
 
 - name: Generate an OpenSSL certificate signed with root CA certificate
   openssl_certificate:
@@ -43,9 +61,10 @@
     ownca_privatekey_path: "{{ certs_temp.path }}/rootCA.key"
     provider: ownca
   with_items: "{{ apache_vhosts_ssl }}"
-  when: apache_create_vhosts
+  when: root_certificates_dir is defined and apache_create_vhosts | bool
 
 - name: Delete temporary certs directory
   file:
     state: absent
     path: "{{ certs_temp.path }}"
+  when: root_certificates_dir is defined

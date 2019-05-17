@@ -1,4 +1,0 @@
----
-# defaults/main.yml
-
-root_certificates_dir: "{{ playbook_dir }}/inventories/deploy/all/files/certs"
